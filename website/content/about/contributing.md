@@ -58,7 +58,7 @@ Contributor Strategy repository].
 
 If you need to clone the CNCF Contribute repository elsewhere, set an environment
 variable named `CONTRIBUTE_REPO` to the path where it is cloned. For example, 
-`set CONTRIBUTE_REPO=../cncf-contribute`.
+`export CONTRIBUTE_REPO=../cncf-contribute`.
 
 ## Quick start with Netlify
 

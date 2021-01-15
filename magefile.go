@@ -85,6 +85,10 @@ func Preview() error {
 	return errors.Wrap(openURL(url), "could not open the website in a browser")
 }
 
+func Logs() error {
+	return shx.RunE("docker", "logs", "-f", img)
+}
+
 // Use hugo in a docker container.
 func Hugo() error {
 	pwd, _ := os.Getwd()
