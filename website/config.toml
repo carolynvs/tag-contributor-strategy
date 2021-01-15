@@ -145,16 +145,6 @@ version = "0.0"
 # point people to the main doc site.
 url_latest_version = "https://example.com"
 
-# Repository configuration (URLs for in-page links to opening issues and suggesting changes)
-github_repo = "https://github.com/cncf/sig-contributor-strategy"
-github_branch = "website"
-
-# An optional link to a related project repo. For example, the sibling repository where your product code lives.
-# github_project_repo = "https://github.com/cncf/sig-contributor-strategy"
-
-# Specify a value here if your content directory is not in your repo's root directory
-github_subdir = "website"
-
 # Google Custom Search Engine ID. Remove or comment out to disable search.
 gcs_engine_id = "011737558837375720776:fsdu1nryfng"
 
@@ -166,6 +156,17 @@ offlineSearch = false
 
 # Enable syntax highlighting and copy buttons on code blocks with Prism
 prism_syntax_highlighting = false
+
+# Repository configuration (URLs for in-page links to opening issues and suggesting changes)
+[params.github]
+  repo = "https://github.com/cncf/sig-contributor-strategy"
+  branch = "website"
+  subdir = "website"
+
+  [params.github.contributors]
+    repo = "https://github.com/carolynvs/cncf-contribute"
+    branch = "website"
+
 
 # User interface configuration
 [params.ui]

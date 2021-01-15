@@ -4,7 +4,6 @@ linkTitle: "Templates"
 date: 2020-11-07
 description: >
   Jump start your CNCF project by using our recommended templates
-tmpl_repo: https://github.com/cncf/project-template
 ---
 
 We have a [project template] repository that has templates for everything your project needs
@@ -31,9 +30,9 @@ when you view the markdown file in GitHub unless you view the raw text.
 
 ## Required Files
 
-* [LICENSE]({{< param tmpl_repo >}}/blob/main/LICENSE)
-* [CONTRIBUTING.md]({{< param tmpl_repo >}}/blob/main/CONTRIBUTING.md)
-* [README.md]({{< param tmpl_repo >}}/blob/main/README.md)
+* [LICENSE](https://github.com/cncf/project-template/blob/main/LICENSE)
+* [CONTRIBUTING.md](https://github.com/cncf/project-template/blob/main/CONTRIBUTING.md)
+* [README.md](https://github.com/cncf/project-template/blob/main/README.md)
 
-[contrib-strat]: {{< param github_repo >}}/blob/master/README.md
-[project template]: {{< param tmpl_repo >}}
+[contrib-strat]: https://github.com/cncf/sig-contributor-strategy/blob/master/README.md
+[project template]: https://github.com/cncf/project-template
