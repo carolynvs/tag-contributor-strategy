@@ -19,7 +19,7 @@ information on using pull requests.
 
 ## Prerequisites
 
-* [Go](https://golang.org/doc/install) 1.15+
+* [Go] 1.15+
 * [Mage](https://magefile.org) (optional). You can install it by running 
   `go run mage.go EnsureMage` from this repository and follow any instructions
   in the command output.
@@ -40,6 +40,8 @@ Targets:
   hugo          Use hugo in a docker container.
   preview*      Run a local server to preview the website and watch for changes.
 ```
+
+[Go]: https://golang.org/doc/install
 
 ## Content Organization
 
@@ -105,15 +107,17 @@ Docsy has a shortcut for you:
 
 If you want to run a Docker container to preview your changes as you work:
 
-1. [Install Docker](https://docs.docker.com/get-docker/) and make.
+1. [Install Docker](https://docs.docker.com/get-docker/) and [Go].
 1. Fork the [SIG Contributor Strategy repository] into your own project, then
    create a local copy using `git clone`. 
-1. Run `make preview` to build the site. When the site is ready, it will open
+1. Run `mage preview` to preview the site. When the site is ready, it will open
    your web browser to http://localhost:1313/. Now that you're serving your site
    locally, Hugo will watch for changes to the content and automatically refresh
    your site.
 1. Continue with the usual GitHub workflow to edit files, commit them, push the
    changes up to your fork, and create a pull request.
+
+If you need to see the Hugo output, run `mage logs`.
 
 ## Creating an issue
 
