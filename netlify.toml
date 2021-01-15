@@ -4,14 +4,14 @@
 [build]
   base = "/"
   publish = "website/public/"
-  command = "hugo -s website --debug --verbose"
+  command = "git submodule update --init --recursive && hugo -s website --debug --verbose"
 
 [build.environment]
   HUGO_VERSION = "0.79.0"
   HUGO_ENV = "production"
 
 [context.branch-deploy]
-  command = "hugo -s website --debug --verbose -b $DEPLOY_PRIME_URL/"
+  command = "git submodule update --init --recursive && hugo -s website --debug --verbose -b $DEPLOY_PRIME_URL/"
   
 [context.deploy-preview]
-  command = "hugo -s website --debug --verbose -b $DEPLOY_PRIME_URL/"
+  command = "git submodule update --init --recursive && hugo -s website --debug --verbose -b $DEPLOY_PRIME_URL/"
