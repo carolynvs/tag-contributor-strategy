@@ -86,7 +86,7 @@ func Preview() error {
 }
 
 func Logs() error {
-	return shx.RunE("docker", "logs", "-f", img)
+	return sh.RunV("docker", "logs", "-f", img)
 }
 
 // Use hugo in a docker container.
@@ -97,6 +97,26 @@ func Hugo() error {
 	cmd.Cmd.Stdin = os.Stdin
 	_, _, err := cmd.Run()
 	return errors.Wrap(err, "could not start hugo in a container")
+}
+
+func Deploy() error {
+	mg.Deps(docsy, syncGoMod)
+
+	return sh.RunV("hugo", "-s", "website", "--debug", "--verbose")
+}
+
+func DeployPreview() error {
+	mg.Deps(docsy, syncGoMod)
+
+	return sh.RunV("hugo", "-s", "website", "--debug", "--verbose", "-b", getBaseUrl())
+}
+
+func syncGoMod() error {
+	return sh.RunV("go", "mod", "download")
+}
+
+func getBaseUrl() string {
+	return os.Getenv("DEPLOY_PRIME_URL" + "/")
 }
 
 // Create go.local.mod with any appropriate replace statements, and
@@ -125,6 +145,13 @@ func useLocalContributeModule() (contribMount string, goModMount string, err err
 		return "", "", err
 	}
 	goModMount = fmt.Sprintf("-v=%s:/src/website/go.mod", localGoMod)
+
+	err = sh.RunV("docker", "run", "--rm", "--entrypoint", "go",
+		"-v", pwd+":/src", goModMount, "-w", "/src/website", img,
+		"mod", "download")
+	if err != nil {
+		return "", "", errors.Wrap(err, "could not modify resolve go.mod")
+	}
 
 	err = sh.RunV("docker", "run", "--rm", "--entrypoint", "go",
 		"-v", pwd+":/src", goModMount, "-w", "/src/website", img,

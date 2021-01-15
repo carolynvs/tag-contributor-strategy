@@ -80,7 +80,7 @@ pygmentsStyle = "tango"
     path = "github.com/cncf/contribute"
 
   [[module.imports.mounts]]
-    source = "content"
+    source = "content/contributors"
     target = "content/contributors/"
 
 # Configure how URLs look like per section.
