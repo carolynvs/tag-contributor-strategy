@@ -1,5 +1,5 @@
 [settings]
-  ID = "cncf-contributor-strategy"
+  ID = "cncf-contribute"
 
 [build]
   base = "/"
