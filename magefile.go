@@ -67,11 +67,13 @@ func Preview() error {
 
 	port := getPort()
 	pwd, _ := os.Getwd()
-	err = shx.Command("docker", "run", "-d", "-v", pwd+":/src",
+	cmd := shx.Command("docker", "run", "-d", "-v", pwd+":/src",
 		contribMount, goModMount, "-p", port+":1313",
 		"--name", containerName, img, "server", "--debug", "--verbose",
 		"--buildDrafts", "--buildFuture", "--noHTTPCache", "--watch", "--bind=0.0.0.0").
-		CollapseArgs().Run()
+		CollapseArgs()
+	fmt.Printf("%#v\n", cmd.Cmd.Args)
+	err = cmd.RunE()
 	if err != nil {
 		return errors.Wrap(err, "could not run website container")
 	}
@@ -95,8 +97,11 @@ func Hugo() error {
 	cmd := shx.Command("docker", "run", "--rm", "-it", "-v", pwd+":/src", "-w", "/src/website", img, "shell").
 		Stdout(os.Stdout)
 	cmd.Cmd.Stdin = os.Stdin
-	err := cmd.Run()
-	return errors.Wrap(err, "could not start hugo in a container")
+	ran, _, err := cmd.Exec()
+	if !ran {
+		return errors.Wrap(err, "could not start hugo in a container")
+	}
+	return nil // Ignore exit code since it will always be non-zero when you exit out of the container
 }
 
 func Deploy() error {
@@ -131,13 +136,7 @@ func useLocalContributeModule() (contribMount string, goModMount string, err err
 		fmt.Println("Checking for a local copy of github.com/cncf/contribute at", contributeRepo)
 	}
 
-	// Only mount the local repo if it exists, otherwise use the one on github
-	_, err = os.Stat(contributeRepo)
-	if err != nil {
-		return "", "", nil
-	}
-
-	log.Println("Using your local copy of github.com/cncf/contribute ->", contributeRepo)
+	// Resolve the go.mod into go.local.mod so that we don't modify the canonical go.mod file
 	pwd, _ := os.Getwd()
 	localGoMod := filepath.Join(pwd, "website/go.local.mod")
 	err = copyFile("website/go.mod", localGoMod)
@@ -147,14 +146,21 @@ func useLocalContributeModule() (contribMount string, goModMount string, err err
 	goModMount = fmt.Sprintf("-v=%s:/src/website/go.mod", localGoMod)
 
 	err = shx.RunV("docker", "run", "--rm", "--entrypoint", "go",
-		"-v", pwd+":/src", goModMount, "-w", "/src/website", img,
+		goModMount, "-w", "/src/website", img,
 		"mod", "download")
 	if err != nil {
 		return "", "", errors.Wrap(err, "could not modify resolve go.mod")
 	}
 
+	// Only mount the local repo if it exists, otherwise use the one on github
+	_, err = os.Stat(contributeRepo)
+	if err != nil {
+		return "", goModMount, nil
+	}
+	log.Println("Using your local copy of github.com/cncf/contribute ->", contributeRepo)
+
 	err = shx.RunV("docker", "run", "--rm", "--entrypoint", "go",
-		"-v", pwd+":/src", goModMount, "-w", "/src/website", img,
+		goModMount, "-w", "/src/website", img,
 		"mod", "edit", "-replace", "github.com/cncf/contribute=/src/contribute")
 	if err != nil {
 		return "", "", errors.Wrap(err, "could not modify go.mod to use your local copy of github.com/cncf/contribute")
