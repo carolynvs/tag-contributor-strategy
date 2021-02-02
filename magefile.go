@@ -15,12 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carolynvs/magex/xplat"
-
 	"github.com/carolynvs/magex/pkg"
 	"github.com/carolynvs/magex/shx"
+	"github.com/carolynvs/magex/xplat"
 	"github.com/magefile/mage/mg"
-	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 )
 
@@ -52,8 +50,9 @@ func Build() error {
 	}
 
 	pwd, _ := os.Getwd()
-	return sh.RunV("docker", shx.CollapseArgs("run", "--rm", "-v", pwd+":/src",
-		contribMount, goModMount, containerName, "--debug", "--verbose")...)
+	return shx.Command("docker", "run", "--rm", "-v", pwd+":/src",
+		contribMount, goModMount, containerName, "--debug", "--verbose").
+		CollapseArgs().RunV()
 }
 
 // Run a local server to preview the website and watch for changes.
@@ -68,10 +67,11 @@ func Preview() error {
 
 	port := getPort()
 	pwd, _ := os.Getwd()
-	err = sh.RunV("docker", shx.CollapseArgs("run", "-d", "-v", pwd+":/src",
+	err = shx.Command("docker", "run", "-d", "-v", pwd+":/src",
 		contribMount, goModMount, "-p", port+":1313",
 		"--name", containerName, img, "server", "--debug", "--verbose",
-		"--buildDrafts", "--buildFuture", "--noHTTPCache", "--watch", "--bind=0.0.0.0")...)
+		"--buildDrafts", "--buildFuture", "--noHTTPCache", "--watch", "--bind=0.0.0.0").
+		CollapseArgs().Run()
 	if err != nil {
 		return errors.Wrap(err, "could not run website container")
 	}
@@ -86,33 +86,33 @@ func Preview() error {
 }
 
 func Logs() error {
-	return sh.RunV("docker", "logs", "-f", img)
+	return shx.RunV("docker", "logs", "-f", img)
 }
 
 // Use hugo in a docker container.
 func Hugo() error {
 	pwd, _ := os.Getwd()
-	cmd := sh.Command("docker", "run", "--rm", "-it", "-v", pwd+":/src", "-w", "/src/website", img, "shell").
+	cmd := shx.Command("docker", "run", "--rm", "-it", "-v", pwd+":/src", "-w", "/src/website", img, "shell").
 		Stdout(os.Stdout)
 	cmd.Cmd.Stdin = os.Stdin
-	_, _, err := cmd.Run()
+	err := cmd.Run()
 	return errors.Wrap(err, "could not start hugo in a container")
 }
 
 func Deploy() error {
 	mg.Deps(docsy, syncGoMod)
 
-	return sh.RunV("hugo", "-s", "website", "--debug", "--verbose")
+	return shx.RunV("hugo", "-s", "website", "--debug", "--verbose")
 }
 
 func DeployPreview() error {
 	mg.Deps(docsy, syncGoMod)
 
-	return sh.RunV("hugo", "-s", "website", "--debug", "--verbose", "-b", getBaseUrl())
+	return shx.RunV("hugo", "-s", "website", "--debug", "--verbose", "-b", getBaseUrl())
 }
 
 func syncGoMod() error {
-	return sh.RunV("go", "mod", "download")
+	return shx.RunV("go", "mod", "download")
 }
 
 func getBaseUrl() string {
@@ -146,14 +146,14 @@ func useLocalContributeModule() (contribMount string, goModMount string, err err
 	}
 	goModMount = fmt.Sprintf("-v=%s:/src/website/go.mod", localGoMod)
 
-	err = sh.RunV("docker", "run", "--rm", "--entrypoint", "go",
+	err = shx.RunV("docker", "run", "--rm", "--entrypoint", "go",
 		"-v", pwd+":/src", goModMount, "-w", "/src/website", img,
 		"mod", "download")
 	if err != nil {
 		return "", "", errors.Wrap(err, "could not modify resolve go.mod")
 	}
 
-	err = sh.RunV("docker", "run", "--rm", "--entrypoint", "go",
+	err = shx.RunV("docker", "run", "--rm", "--entrypoint", "go",
 		"-v", pwd+":/src", goModMount, "-w", "/src/website", img,
 		"mod", "edit", "-replace", "github.com/cncf/contribute=/src/contribute")
 	if err != nil {
@@ -218,12 +218,12 @@ func docsy() error {
 }
 
 func containerExists(name string) bool {
-	output, err := sh.Output("docker", "ps", "--all", "--filter", "name="+name)
+	output, err := shx.Output("docker", "ps", "--all", "--filter", "name="+name)
 	return err == nil && strings.Contains(output, name)
 }
 
 func removeContainer(name string) error {
-	return sh.RunV("docker", "rm", "-f", name)
+	return shx.RunV("docker", "rm", "-f", name)
 }
 
 func awaitContainer(name string, logSearch string) error {
@@ -235,7 +235,7 @@ func awaitContainer(name string, logSearch string) error {
 		case <-cxt.Done():
 			return errors.Errorf("timeout waiting for container %s to become ready", name)
 		default:
-			logs, err := sh.Output("docker", "logs", name)
+			logs, err := shx.Output("docker", "logs", name)
 			if err != nil {
 				return errors.Wrapf(err, "could not get logs for container %s", name)
 			}
