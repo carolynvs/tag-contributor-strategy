@@ -1,5 +1,7 @@
 # CNCF SIG Contributor Strategy
 
+test
+
 SIG Contributor Strategy is responsible for contributor experience,
 sustainability, governance, and openness guidance to help CNCF community groups
 and projects with their own contributor strategies for a healthy project.
